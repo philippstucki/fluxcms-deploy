@@ -8,10 +8,10 @@ Simple Deployment Script for FluxCMS based projects
 ## Description
 *fluxcms-deploy* assists in deploying FluxCMS projects. Targets are configured using text files and contain user, host and directory. The user running commands on the target needs proper sudo permissions.
 
-If *target-name* is specified the corresponding target configuration file is looked up in deployment/targets/*target-name*`.txt
+If *target-name* is specified the corresponding target configuration file is looked up in deployment/targets/*target-name*.txt
 
 ### Options
-* **-n** Tells rsync to perform a dry run
+* **-n** Tells rsync to perform a dry run resulting in no changes made
 
 ## Example Configuration
 See deployment/targets/my-target.txt for an example target configuration.
