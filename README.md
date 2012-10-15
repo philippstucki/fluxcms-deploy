@@ -1,4 +1,5 @@
-# fluxcms-deploy - Simple Deployment Script for FluxCMS based projects
+# fluxcms-deploy
+Simple Deployment Script for FluxCMS based projects
 
 ## Synopsis
 
