@@ -1,0 +1,12 @@
+/files**
+/data**
+/dynimages**
+/dynimage**
+/tmp**
+/install**
+/conf/config.xml
+deploy
+/deployment**
+.git
+.gitignore
+.gitmodules

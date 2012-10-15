@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+# Copyright (c) Stucki & Stucki GmbH
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met: 
+#
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer. 
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution. 
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+RSYNC_ARGS=''
+
+# Parsing options using getopts: http://wiki.bash-hackers.org/howto/getopts_tutorial
+while getopts ":n" opt; do
+    case $opt in
+        n)
+            echo "[deploy] Performing a dry run." >&2
+            RSYNC_ARGS="-n"
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument." >&2
+            exit 1
+            ;;
+    esac
+done
+
+# check if a target has been specified
+shift $(($OPTIND - 1))
+if [ -z "$1" ]; then
+    echo "No target specified."
+    exit
+fi
+targetConfig="deployment/targets/$1.txt"
+
+# check if specified target exists
+if [ ! -e "$targetConfig" ]; then
+    echo "Target config does not exist: '$targetConfig'"
+    exit
+fi
+
+# read target config from file
+source "$targetConfig"
+
+target="$targetUser@$targetHost:$targetDir"
+echo "[deploy] deploying to $target"
+
+# detect changes to local git repository and wait for ack if repo has changes
+if ! git diff-index --quiet HEAD --; then
+    echo -e "YOUR LOCAL REPOSITORY HAS CHANGES !!\nPress ENTER to continue deployment or CTRL+C to abort."
+    read
+    echo $foo
+fi
+
+echo -e "[deploy] Sending files to the server..."
+rsync \
+    ${RSYNC_ARGS} \
+    --archive \
+    --verbose \
+    --recursive \
+    --compress \
+    --itemize-changes \
+    --omit-dir-times \
+    --delete \
+    -e ssh \
+    --exclude-from=deployment/exclude.txt \
+    . "$target"
+
+echo -e "\n[deploy] Creating directories and setting permissions on the target"
+ssh "$targetUser@$targetHost" \
+    "
+    cd $targetDir
+    [ ! -d files ] && mkdir files
+    [ ! -d data ] && mkdir data
+    [ ! -d dynimages ] && mkdir dynimages
+    [ ! -d dynimage ] && mkdir dynimage
+    [ ! -d tmp ] && mkdir tmp
+    sudo rm -rf $targetDir/tmp/*
+    sudo chmod -R a+rw $targetDir/files
+    sudo chmod -R a+rw $targetDir/data
+    sudo chmod -R a+rw $targetDir/dynimages
+    sudo chmod -R a+rw $targetDir/dynimage
+    sudo chmod -R a+rw $targetDir/tmp
+    "

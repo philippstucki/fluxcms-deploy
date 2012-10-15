@@ -1,0 +1,3 @@
+targetUser="deployment-username"
+targetHost="my-www1.my-domain.example.com"
+targetDir="/path/to/fluxcms-root"
