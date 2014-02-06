@@ -71,7 +71,7 @@ fi
 
 # check if a matching branch was given and compare if so
 if [ -n "$targetBranch" ] && [ "$targetBranch" != `git symbolic-ref --short HEAD` ]; then
-    echo -e "Current branch does not match configured target branch."
+    echo -e "Current branch does not match configured target branch '$targetBranch'."
     exit
 fi
 
