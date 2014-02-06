@@ -52,7 +52,7 @@ targetConfig="deployment/targets/$1.txt"
 
 # check if specified target exists
 if [ ! -e "$targetConfig" ]; then
-    echo "Target config does not exist: '$targetConfig'"
+    echo "ERROR: Target config does not exist: '$targetConfig'"
     exit
 fi
 
@@ -71,8 +71,20 @@ fi
 
 # check if a matching branch was given and compare if so
 if [ -n "$targetBranch" ] && [ "$targetBranch" != `git symbolic-ref --short HEAD` ]; then
-    echo -e "Current branch does not match configured target branch '$targetBranch'."
+    echo -e "ERROR: Current branch does not match configured target branch '$targetBranch'."
     exit
+fi
+
+# check if specified target exists
+if [ -e "composer.json" ]; then
+
+    if [ ! -e "composer.phar" ]; then
+        echo -e "ERROR: composer.phar is missing."
+        exit
+    fi
+
+    echo "[deploy] installing composer dependencies..."
+    php composer.phar install --no-dev --optimize-autoloader
 fi
 
 echo -e "[deploy] Sending files to the server..."
