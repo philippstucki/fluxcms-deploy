@@ -101,6 +101,7 @@ ssh "$targetUser@$targetHost" \
     sudo rm -rf $targetDir/tmp/*
     sudo chmod -R a+rw $targetDir/files
     sudo chmod -R a+rw $targetDir/data
+    sudo chmod -R a+rw $targetDir/lang
     sudo chmod -R a+rw $targetDir/dynimages
     sudo chmod -R a+rw $targetDir/dynimage
     sudo chmod -R a+rw $targetDir/tmp
